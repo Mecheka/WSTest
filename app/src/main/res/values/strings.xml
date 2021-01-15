@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">WSTest</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="user_name">User name</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="or">OR</string>
+    <string name="register">Register</string>
+    <string name="th_name">ชื่อ</string>
+    <string name="th_last_name">นามสกุล</string>
+    <string name="th_card_no">เลขบัตรประชาชน</string>
+    <string name="th_phone">เบอร์ติดต่อ</string>
+    <string name="save">Save</string>
+    <string name="th_main_screen">หน้าหลัก</string>
+</resources>
