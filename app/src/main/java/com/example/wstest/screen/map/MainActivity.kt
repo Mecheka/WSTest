@@ -2,16 +2,18 @@ package com.example.wstest.screen.map
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.IntentSender
+import android.location.Location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import com.example.wstest.R
 import com.example.wstest.databinding.ActivityMainBinding
 import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -29,8 +31,10 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private lateinit var mMap: GoogleMap
-    private  var client: GoogleApiClient? = null
+    private var client: GoogleApiClient? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
+    private lateinit var locationRequest: LocationRequest
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,45 +44,60 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             .findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MainActivity)
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult?) {
+                super.onLocationResult(result)
+                result?.let {
+                    val sydney = LatLng(it.lastLocation.latitude, it.lastLocation.longitude)
+                    mMap.addMarker(
+                        MarkerOptions()
+                            .position(sydney)
+                            .title("Marker in Sydney")
+                    )
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+                }
+
+            }
+        }
+
         Dexter.withContext(this)
             .withPermissions(
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION
             )
             .withListener(object : MultiplePermissionsListener {
-                @SuppressLint("MissingPermission")
                 override fun onPermissionsChecked(p0: MultiplePermissionsReport?) {
                     enableLocation()
-                    fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MainActivity)
-                    fusedLocationClient.lastLocation.addOnSuccessListener {
-                        val sydney = LatLng(it.latitude, it.longitude)
-                        mMap.addMarker(
-                            MarkerOptions()
-                                .position(sydney)
-                                .title("Marker in Sydney")
-                        )
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
-                    }
                 }
 
                 override fun onPermissionRationaleShouldBeShown(
                     p0: MutableList<PermissionRequest>?,
                     p1: PermissionToken?
                 ) {
+                    p1?.continuePermissionRequest()
                 }
 
             }).check()
     }
 
-    override fun onMapReady(googleMap: GoogleMap?) {
-        googleMap?.let {
-            mMap = it
+    @SuppressLint("MissingPermission")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
 
-            // Add a marker in Sydney and move the camera
-
+        if (requestCode == 3333) {
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
         }
     }
 
+    override fun onMapReady(googleMap: GoogleMap?) {
+        googleMap?.let {
+            mMap = it
+        }
+    }
+
+    @SuppressLint("MissingPermission")
     private fun enableLocation() {
         if (client == null) {
             client = GoogleApiClient.Builder(this)
@@ -95,7 +114,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
                     Log.d("Location error", "Location error " + it.getErrorCode());
                 }.build()
 
-            val locationRequest = LocationRequest.create().apply {
+            locationRequest = LocationRequest.create().apply {
                 interval = 10000
                 fastestInterval = 5000
                 priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -107,7 +126,20 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
             requestLocationBuilder.setAlwaysShow(true)
 
             val result = LocationServices.getSettingsClient(this)
-            result.checkLocationSettings(requestLocationBuilder.build())
+            val task = result.checkLocationSettings(requestLocationBuilder.build())
+            task.addOnSuccessListener {
+                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+            }
+
+            task.addOnFailureListener {
+                if (it is ResolvableApiException) {
+                    try {
+                        it.startResolutionForResult(this, 3333)
+                    } catch (sendEx: IntentSender.SendIntentException) {
+
+                    }
+                }
+            }
         }
     }
 }

@@ -88,6 +88,7 @@ class LoginFragment : BaseFragment() {
             with(builder) {
                 setTitle("ไม่พบข้อมูลผู้ใช้ในระบบกรุณาสมัครสมาชิก และ ติดต่อผู้ดูแลระบบ")
                 setItems(option) { dialog, which ->
+
                     if (option[which] == "สมัครสมาชิก") {
                         it.supportFragmentManager.commit {
                             replace(R.id.contentContainer, RegisterFragment())
@@ -98,6 +99,8 @@ class LoginFragment : BaseFragment() {
                         val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:1176"))
                         startActivity(intent)
                     }
+
+                    dialog.dismiss()
                 }
                 show()
             }
@@ -112,6 +115,7 @@ class LoginFragment : BaseFragment() {
                 setView(dialogView.root)
                 val b = Base64.decode(userAndImage.userImageEntity.image, Base64.DEFAULT)
                 val bitmap = BitmapFactory.decodeByteArray(b, 0, b.size)
+                val dialog=create()
                 dialogView.imageProfile.setImageBitmap(bitmap)
                 dialogView.textUserName.text = userAndImage.userEntity.userName
                 dialogView.textName.text = userAndImage.userEntity.name
@@ -120,6 +124,7 @@ class LoginFragment : BaseFragment() {
                 dialogView.textPhone.text = userAndImage.userEntity.phone
 
                 dialogView.buttonToMain.setOnClickListener { _ ->
+                    dialog.dismiss()
                     val intent = Intent(it, MainActivity::class.java)
                     startActivity(intent)
                 }

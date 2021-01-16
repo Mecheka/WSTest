@@ -1,11 +1,13 @@
 package com.example.wstest.screen.auth
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +18,12 @@ import com.example.wstest.database.entiry.UserEntity
 import com.example.wstest.database.entiry.UserImageEntity
 import com.example.wstest.databinding.FragmentRegisterBinding
 import com.example.wstest.screen.base.BaseFragment
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionDeniedResponse
+import com.karumi.dexter.listener.PermissionGrantedResponse
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.single.PermissionListener
 import java.io.ByteArrayOutputStream
 
 class RegisterFragment : BaseFragment() {
@@ -80,7 +88,7 @@ class RegisterFragment : BaseFragment() {
 
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == CAMERA_CODE) {
-                binding.imageProfile.setImageURI(data?.data)
+                binding.imageProfile.setImageBitmap(data?.extras?.get("data") as Bitmap)
             } else {
                 binding.imageProfile.setImageURI(data?.data)
             }
@@ -96,8 +104,24 @@ class RegisterFragment : BaseFragment() {
                 setItems(option) { dialog, which ->
                     when {
                         option[which] == "Take Photo" -> {
-                            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                            startActivityForResult(intent, CAMERA_CODE)
+                            Dexter.withContext(it).withPermission(Manifest.permission.CAMERA)
+                                .withListener(object : PermissionListener {
+                                    override fun onPermissionGranted(p0: PermissionGrantedResponse?) {
+                                        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+                                        startActivityForResult(intent, CAMERA_CODE)
+                                    }
+
+                                    override fun onPermissionDenied(p0: PermissionDeniedResponse?) {
+                                        Log.DEBUG
+                                    }
+
+                                    override fun onPermissionRationaleShouldBeShown(
+                                        p0: PermissionRequest?,
+                                        p1: PermissionToken?
+                                    ) {
+                                        p1?.continuePermissionRequest()
+                                    }
+                                }).check()
                         }
                         option[which] == "Choose from Gallery" -> {
                             val intent = Intent(Intent.ACTION_PICK)
