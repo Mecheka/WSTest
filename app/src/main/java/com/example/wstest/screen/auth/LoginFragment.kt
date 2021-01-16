@@ -88,7 +88,7 @@ class LoginFragment : BaseFragment() {
             with(builder) {
                 setTitle("ไม่พบข้อมูลผู้ใช้ในระบบกรุณาสมัครสมาชิก และ ติดต่อผู้ดูแลระบบ")
                 setItems(option) { dialog, which ->
-
+                    dialog.dismiss()
                     if (option[which] == "สมัครสมาชิก") {
                         it.supportFragmentManager.commit {
                             replace(R.id.contentContainer, RegisterFragment())
@@ -100,7 +100,7 @@ class LoginFragment : BaseFragment() {
                         startActivity(intent)
                     }
 
-                    dialog.dismiss()
+
                 }
                 show()
             }
