@@ -1,10 +1,9 @@
 package com.example.wstest.screen.auth
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import androidx.lifecycle.ViewModelProvider
-import com.example.wstest.R
 import com.example.wstest.databinding.ActivityAuthBinding
 
 class AuthActivity : AppCompatActivity() {

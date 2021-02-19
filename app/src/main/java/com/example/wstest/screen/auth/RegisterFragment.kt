@@ -40,7 +40,7 @@ class RegisterFragment : BaseFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentRegisterBinding.inflate(layoutInflater, container, false)
         return binding.root
     }

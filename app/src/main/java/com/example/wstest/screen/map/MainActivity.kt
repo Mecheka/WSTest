@@ -4,11 +4,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.IntentSender
-import android.location.Location
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Looper
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import com.example.wstest.R
 import com.example.wstest.databinding.ActivityMainBinding
 import com.google.android.gms.common.api.GoogleApiClient
@@ -111,7 +110,7 @@ class MainActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 })
                 .addOnConnectionFailedListener {
-                    Log.d("Location error", "Location error " + it.getErrorCode());
+                    Log.d("Location error", "Location error " + it.errorCode)
                 }.build()
 
             locationRequest = LocationRequest.create().apply {

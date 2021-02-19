@@ -9,6 +9,4 @@ data class UserImageEntity(
     @PrimaryKey(autoGenerate = true) val id: Int? = null,
     @ColumnInfo(name = "user_name") val userName: String?,
     val image: String?
-) {
-
-}
+)
